@@ -1906,13 +1906,13 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 			    cwnd_ >= wnd_ && !fastrecov_) {
 				newack(pkt);	// update timers,  highest_ack_
 				//zjn
-                if (hdr_tcp::access(pkt)->flags() & TH_ACK) {
+                /*if (hdr_tcp::access(pkt)->flags() & TH_ACK) {
                 send_much(0, REASON_NORMAL, maxburst_);
                  } else {
                   send_much(1, REASON_NORMAL, maxburst_);
                 }
-				
-				//send_much(0, REASON_NORMAL, maxburst_);
+				*/
+				send_much(0, REASON_NORMAL, maxburst_);
 				Packet::free(pkt);
 				
 				return;

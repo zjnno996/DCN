@@ -2004,13 +2004,13 @@ void TcpAgent::recv(Packet *pkt, Handler*)
 			send_one();
 		}
 		        /* Add the following code to handle an empty data packet */
-        int payload_size = hdr_cmn::access(pkt)->size() - tcph->hlen();
+        /*int payload_size = hdr_cmn::access(pkt)->size() - tcph->hlen();
         if (payload_size == 0) {
             // this is an empty data packet, send a redundant packet to inform the sender
             output(last_ack_, TCP_REASON_DUPACK);
             Packet::free(pkt);
             return;
-        }
+        }*/
 	}
 
 	if (QOption_ && EnblRTTCtr_)
