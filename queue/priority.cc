@@ -37,26 +37,27 @@ void Priority::enque(Packet* p)
 	if(pktlen==1500) prio=1;
 	else if(pktlen==1000) prio=2;
 	const unsigned int TH_ACK=0x10;
-	int ack=(tcpheader->flags()&&TH_ACK);
+	int ack=(tcpheader->flags()&TH_ACK);
 	if(ack) prio=0;
 	hdr_flags* hf = hdr_flags::access(p);
-	//int qlimBytes = qlim_ * mean_pktsize_;
+	/*if((marking_scheme_==PER_QUEUE_ECN && q_[prio]->byteLength()>thresh_*mean_pktsize_)||
+    (marking_scheme_==PER_PORT_ECN && TotalByteLength()>thresh_*mean_pktsize_))
+    {
+        if (hf->ect()) //If this packet is ECN-capable
+		{
+			
+            hf->ce()=1;
+			prio=0;
+		}
+    }*/
+
 	int TotalBufferBytes=qlim_ * mean_pktsize_;
-	printf("queue packet prio is %d,packet size =%d",prio,pktlen);
-    // 1<=queue_num_<=MAX_QUEUE_NUM
-   
-    
-	//queue length exceeds the queue limit
-	/*if(TotalByteLength()+hdr_cmn::access(p)->size()>qlimBytes)
-	{
-		drop(p);
-		return;
-	}*/
+
 	if(TotalByteLength()+hdr_cmn::access(p)->size()>TotalBufferBytes)
 	{
 		int nowlen=hdr_cmn::access(p)->size();
 		
-		int sum_afterqueue=0;
+		/*int sum_afterqueue=0;
 		int sum=0;
 		for(int i=prio+1;i<queue_num_;i++)
 		{
@@ -65,29 +66,275 @@ void Priority::enque(Packet* p)
 		if(nowlen>sum_afterqueue)
 		{
 			drop(p);
+			//Packet *new_pkt = p->copy();  
+            //new_pkt->setdata(NULL, 0); 
+			//q_[0]->enque(new_pkt);
 			return;
-		}
+		}*/
 		int flag=0;
-		for(int i=queue_num_-1;i>=prio+1;i--)
+		if(nowlen==40)
+		{
+			int k=0;
+			for(int i=3;i>=1;i--){
+				if(q_[i]->length()>0) k=i;
+			}
+			if(k==0) drop(p);
+			else
+			{
+				    Packet *tail_packet = q_[i]->tail();
+				    q_[k]->remove(tail_packet);
+					int header_size = hdr_cmn::access(tail_packet)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+					drop(tail_packet);
+					q_[0]->enque(p);
+				    q_[0]->enque(new_pkt);
+					
+			}
+		}
+		else if(nowlen==1500)
+		{
+			int k3=q_[3]->length();
+			int k2=q_[2]->length();
+			int k1=q_[1]->length();
+			int sum=TotalByteLength()+nowlen-k2*960-k3*460;//2-3优先级剔除，是否够
+			if(sum<=TotalBufferBytes)
+			{
+				int k=3;
+				int now_sum=TotalByteLength()+nowlen;
+				while(now_sum>TotalBufferBytes)
+				{
+					if(q_[k]->length()==0) k--;
+					Packet *tail_packet = q_[k]->tail();
+				    q_[k]->remove(tail_packet);
+					int header_size = hdr_cmn::access(tail_packet)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+					drop(tail_packet);
+				    q_[0]->enque(new_pkt);
+					if(k==3)
+					now_sum=now_sum-460;
+				    else
+					now_sum=now_sum-960;
+				}
+				q_[1]->enque(p);
+			}
+			else
+			{
+				if(TotalByteLength()+40<=TotalBufferBytes){
+					int header_size = hdr_cmn::access(p)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(p);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+					drop(p);
+				    q_[0]->enque(new_pkt);
+				}
+				else
+				{
+					
+					if(k1+k2+k3>0){
+						for(int i=3;i>=1;i--){
+							if(q_[i]->length()>0)
+							{
+								Packet *tail_packet = q_[i]->tail();
+				                q_[i]->remove(tail_packet);
+					            int header_size = hdr_cmn::access(tail_packet)->size();
+                                // 创建一个新的数据包，只包含头部
+                                Packet* new_pkt = Packet::alloc();
+                                hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                                hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                                memcpy(new_hdr, hdr, header_size);
+					            drop(tail_packet);
+				
+                                Packet* new_pkt1 = Packet::alloc();
+                                hdr_cmn* hdr1 = hdr_cmn::access(p);
+                                hdr_cmn* new_hdr1 = hdr_cmn::access(new_pkt1);
+                                memcpy(new_hdr1, hdr1, header_size);
+					            drop(p);
+				                q_[0]->enque(new_pkt1);
+				                q_[0]->enque(new_pkt);
+								break;
+							}
+						}
+							
+					}
+					else
+					{
+						drop(p);
+					}
+				}
+			}
+		}
+		else if(nowlen==1000){
+			int k3=q_[3]->length();
+			int k2=q_[2]->length();
+			int k1=q_[1]->length();
+			int sum=TotalByteLength()+nowlen-k3*460;//3优先级剔除，是否够
+			if(sum<=TotalBufferBytes)
+			{
+				int k=3;
+				int now_sum=TotalByteLength()+nowlen;
+				while(now_sum>TotalBufferBytes)
+				{
+					if(q_[k]->length()==0) k--;
+					Packet *tail_packet = q_[k]->tail();
+				    q_[k]->remove(tail_packet);
+					int header_size = hdr_cmn::access(tail_packet)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+					drop(tail_packet);
+				    q_[0]->enque(new_pkt);
+					if(k==3)
+					now_sum=now_sum-460;
+				}
+				q_[2]->enque(p);
+			}
+			else
+			{
+				
+				    if(k1+k2+k3>0){
+						for(int i=3;i>=1;i--){
+							if(q_[i]->length()>0)
+							{
+								Packet *tail_packet = q_[i]->tail();
+				                q_[i]->remove(tail_packet);
+					            int header_size = hdr_cmn::access(tail_packet)->size();
+                                // 创建一个新的数据包，只包含头部
+                                Packet* new_pkt = Packet::alloc();
+                                hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                                hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                                memcpy(new_hdr, hdr, header_size);
+					            drop(tail_packet);
+				
+                                Packet* new_pkt1 = Packet::alloc();
+                                hdr_cmn* hdr1 = hdr_cmn::access(p);
+                                hdr_cmn* new_hdr1 = hdr_cmn::access(new_pkt1);
+                                memcpy(new_hdr1, hdr1, header_size);
+					            drop(p);
+				                q_[0]->enque(new_pkt1);
+				                q_[0]->enque(new_pkt);
+								break;
+							}
+						}
+							
+					}
+					else
+					{
+						drop(p);
+					}
+				
+				
+			}
+			
+			
+			
+			
+		}
+		else
+		{
+		    int k3=q_[3]->length();
+			int k2=q_[2]->length();
+			int k1=q_[1]->length();
+		
+			 if(k1+k2+k3>0){
+						for(int i=3;i>=1;i--){
+							if(q_[i]->length()>0)
+							{
+								Packet *tail_packet = q_[i]->tail();
+				                q_[i]->remove(tail_packet);
+					            int header_size = hdr_cmn::access(tail_packet)->size();
+                                // 创建一个新的数据包，只包含头部
+                                Packet* new_pkt = Packet::alloc();
+                                hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                                hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                                memcpy(new_hdr, hdr, header_size);
+					            drop(tail_packet);
+				
+                                Packet* new_pkt1 = Packet::alloc();
+                                hdr_cmn* hdr1 = hdr_cmn::access(p);
+                                hdr_cmn* new_hdr1 = hdr_cmn::access(new_pkt1);
+                                memcpy(new_hdr1, hdr1, header_size);
+					            drop(p);
+				                q_[0]->enque(new_pkt1);
+				                q_[0]->enque(new_pkt);
+								break;
+							}
+						}
+							
+					}
+					else
+					{
+						drop(p);
+					}
+		}
+		/*for(int i=queue_num_-1;i>=prio;i--)
 		{
 			while(q_[i]->length()>0)
 			{
 				//Packet* headPacket = q_[i]->deque();
 				//Packet* fro=q_[i]->head()
-				Packet *tail_packet = q_[i]->tail();
-				sum=sum+hdr_cmn::access(tail_packet)->size();
-				q_[i]->remove(tail_packet);
-				drop(tail_packet);
-				//q_[i]->deque(tail_packet);
-				if(sum>=nowlen)
+				if(nowlen+TotalByteLength()>TotalBufferBytes)
+				{
+					if(i==prio)
+					{
+					int header_size = hdr_cmn::access(p)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(p);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+				    q_[0]->enque(new_pkt);
+					drop(p);
+					  flag=1;
+					break;
+					}
+					else
+					{
+					Packet *tail_packet = q_[i]->tail();
+				    q_[i]->remove(tail_packet);
+					int header_size = hdr_cmn::access(tail_packet)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+					drop(tail_packet);
+				    q_[0]->enque(new_pkt);
+					}
+				    //Packet *new_pkt = tail_packet->copy();  
+					int header_size = hdr_cmn::access(tail_packet)->size();
+                    // 创建一个新的数据包，只包含头部
+                    Packet* new_pkt = Packet::alloc();
+                    hdr_cmn* hdr = hdr_cmn::access(tail_packet);
+                    hdr_cmn* new_hdr = hdr_cmn::access(new_pkt);
+                    memcpy(new_hdr, hdr, header_size);
+					
+                    //new_pkt->setdata(NULL, 0); 
+					//new_pkt->remove_data(new_pkt->length() - new_pkt->hdrlen());
+			        
+				}
+				else
 				{
 					q_[prio]->enque(p);
 					flag=1;
 					break;
 				}
+				
 			}
-			if(flag) break;
-		}
+			
+		}*/
+		
 	}
 	else
 	{
@@ -104,12 +351,12 @@ void Priority::enque(Packet* p)
 	q_[prio]->enque(p);
     */
     //Enqueue ECN marking: Per-queue or Per-port
-    if((marking_scheme_==PER_QUEUE_ECN && q_[prio]->byteLength()>thresh_*mean_pktsize_)||
+    /*if((marking_scheme_==PER_QUEUE_ECN && q_[prio]->byteLength()>thresh_*mean_pktsize_)||
     (marking_scheme_==PER_PORT_ECN && TotalByteLength()>thresh_*mean_pktsize_))
     {
         if (hf->ect()) //If this packet is ECN-capable
             hf->ce()=1;
-    }
+    }*/
 }
 
 Packet* Priority::deque()

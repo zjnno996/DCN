@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="668ef11c-e310-4970-847f-f5be3a9c5914" name="变更" comment="">
+      <change afterPath="$PROJECT_DIR$/../PestFence：农业病虫害预警系统商业计划书（ChatGPT优化版）(1).docx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../logFile.tr" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../pFabric.patch" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/priority.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/priority.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/CDF_dctcp.tcl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/CDF_vl2.tcl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/result.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_lldct_dctcp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_lldct_vl2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_pfabric_dctcp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_pfabric_vl2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_pias_dctcp.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_pias_dctcp_oversub.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_pias_heter.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/run_pias_vl2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/spine_empirical.tcl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/spine_empirical_heter.tcl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../scripts/tcp-common-opt.tcl" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tcp/tcp-full.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tcp/tcp-full.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tcp/tcp.cc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../tcp/tcp.h" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="ProjectId" id="2NmkXXSuLUqBueQo7ovwdhXZ1kv" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="应用程序级" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="默认任务">
+      <changelist id="668ef11c-e310-4970-847f-f5be3a9c5914" name="变更" comment="" />
+      <created>1680276686899</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1680276686899</updated>
+    </task>
+    <servers />
+  </component>
+</project>
