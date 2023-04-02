@@ -1900,19 +1900,25 @@ FullTcpAgent::recv(Packet *pkt, Handler*)
 			// If we are in fast
 			// recovery, go below so we can remember to deflate
 			// the window if we need to
-			
+			if(!(hdr_tcp::access(pkt)->flags() & TH_ACK)){
+				send_much(1, REASON_DUPACK, maxburst_);
+				Packet::free(pkt);
+				return;
+			}
 			
 			if (ackno > highest_ack_ && ackno < maxseq_ &&
 			    cwnd_ >= wnd_ && !fastrecov_) {
 				newack(pkt);	// update timers,  highest_ack_
 				//zjn
+				/*
                 if (hdr_tcp::access(pkt)->flags() & TH_ACK) {
                 send_much(0, REASON_NORMAL, maxburst_);
                  } else {
+                  //send_much(false, REASON_NORMAL, maxburst_);
                   send_much(1, REASON_NORMAL, maxburst_);
                 }
-			    
-				//send_much(0, REASON_NORMAL, maxburst_);
+			    */
+				send_much(0, REASON_NORMAL, maxburst_);
 				Packet::free(pkt);
 				
 				return;

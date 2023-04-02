@@ -1986,13 +1986,13 @@ void TcpAgent::recv(Packet *pkt, Handler*)
 	recv_helper(pkt);
 	recv_frto_helper(pkt);
 	/* grow cwnd and check if the connection is done */
-	//int payload_size = hdr_cmn::access(pkt)->size() - tcph->hlen();
-	if (tcph->seqno() > last_ack_) {
+	int payload_size = hdr_cmn::access(pkt)->size() - tcph->hlen();
+	if (tcph->seqno() > last_ack_&&payload_size!=0) {
 		recv_newack_helper(pkt);
 		if (last_ack_ == 0 && delay_growth_) {
 			cwnd_ = initial_window();
 		}
-	} else if (tcph->seqno() == last_ack_) {
+	} else if (tcph->seqno() == last_ack_||(payload_size==0&&tcph->seqno() > last_ack_)) {
                 if (hdr_flags::access(pkt)->eln_ && eln_) {
                         tcp_eln(pkt);
                         return;
@@ -2001,16 +2001,21 @@ void TcpAgent::recv(Packet *pkt, Handler*)
 		if (++dupacks_ == numdupacks_ && !noFastRetrans_) {
 			dupack_action();
 		} else if (dupacks_ < numdupacks_ && singledup_ ) {
+			if(payload_size==0){
+			output(last_ack_, TCP_REASON_DUPACK);
+            Packet::free(pkt);
+			return;
+			}
 			send_one();
 		}
 		        /* Add the following code to handle an empty data packet */
-        int payload_size = hdr_cmn::access(pkt)->size() - tcph->hlen();
+        /*int payload_size = hdr_cmn::access(pkt)->size() - tcph->hlen();
         if (payload_size == 0) {
             // this is an empty data packet, send a redundant packet to inform the sender
             output(last_ack_, TCP_REASON_DUPACK);
             Packet::free(pkt);
             return;
-        }
+        }*/
 	}
 
 	if (QOption_ && EnblRTTCtr_)
